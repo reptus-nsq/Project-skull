@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Skull - Alpha 0.1</title>
+
+<style>
+html,body{
+margin:0;
+overflow:hidden;
+background:#1b1b1b;
+}
+
+canvas{
+display:block;
+touch-action:none;
+}
+</style>
+
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+<script>
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+}
+window.addEventListener("resize",resize);
+resize();
+
+const player={
+x:0,
+y:0,
+size:24,
+speed:4
+};
+
+const keys={};
+
+window.addEventListener("keydown",e=>{
+keys[e.key]=true;
+});
+
+window.addEventListener("keyup",e=>{
+keys[e.key]=false;
+});
+
+let joystick=null;
+
+canvas.addEventListener("touchstart",e=>{
+const t=e.touches[0];
+joystick={
+sx:t.clientX,
+sy:t.clientY,
+dx:0,
+dy:0
+};
+});
+
+canvas.addEventListener("touchmove",e=>{
+if(!joystick)return;
+
+const t=e.touches[0];
+
+joystick.dx=t.clientX-joystick.sx;
+joystick.dy=t.clientY-joystick.sy;
+});
+
+canvas.addEventListener("touchend",()=>{
+joystick=null;
+});
+
+function update(){
+
+let dx=0;
+let dy=0;
+
+if(keys["w"]||keys["ArrowUp"])dy--;
+if(keys["s"]||keys["ArrowDown"])dy++;
+if(keys["a"]||keys["ArrowLeft"])dx--;
+if(keys["d"]||keys["ArrowRight"])dx++;
+
+if(joystick){
+dx=joystick.dx/40;
+dy=joystick.dy/40;
+}
+
+const len=Math.hypot(dx,dy);
+
+if(len>1){
+dx/=len;
+dy/=len;
+}
+
+player.x+=dx*player.speed;
+player.y+=dy*player.speed;
+
+}
+
+function draw(){
+
+ctx.fillStyle="#4caf50";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+ctx.save();
+
+ctx.translate(
+canvas.width/2-player.x,
+canvas.height/2-player.y
+);
+
+const tile=64;
+
+for(let x=-40;x<40;x++){
+
+for(let y=-40;y<40;y++){
+
+ctx.strokeStyle="#56b65d";
+
+ctx.strokeRect(
+x*tile,
+y*tile,
+tile,
+tile
+);
+
+}
+
+}
+
+ctx.fillStyle="blue";
+
+ctx.fillRect(
+player.x-player.size/2,
+player.y-player.size/2,
+player.size,
+player.size
+);
+
+ctx.restore();
+
+ctx.fillStyle="white";
+ctx.font="20px Arial";
+ctx.fillText("Project Skull Alpha 0.1",15,30);
+
+}
+
+function loop(){
+
+update();
+draw();
+
+requestAnimationFrame(loop);
+
+}
+
+loop();
+
+</script>
+
+</body>
+  </html>
